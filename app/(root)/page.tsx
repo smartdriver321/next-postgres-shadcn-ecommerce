@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 
 import ProductList from '@/components/shared/product/product-list'
-import { getLatestProducts } from '@/lib/actions/product-action'
+import { getLatestProducts } from '@/lib/actions/product.actions'
 import { APP_DESCRIPTION, APP_NAME } from '@/lib/constants'
 
 export const metadata: Metadata = {
