@@ -2,11 +2,13 @@ import { notFound } from 'next/navigation'
 
 import ProductImages from '@/components/shared/product/product-images'
 import ProductPrice from '@/components/shared/product/product-price'
+import AddToCart from '@/components/shared/product/add-to-cart'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { getProductBySlug } from '@/lib/actions/product.actions'
+import { getMyCart } from '@/lib/actions/cart.actions'
 import { APP_NAME } from '@/lib/constants'
+import { round2 } from '@/lib/utils'
 
 export async function generateMetadata({
   params,
@@ -33,6 +35,7 @@ const ProductDetails = async ({
 }) => {
   const product = await getProductBySlug(slug)
   if (!product) notFound()
+  const cart = await getMyCart()
 
   return (
     <>
@@ -87,7 +90,17 @@ const ProductDetails = async ({
                 </div>
                 {product.stock !== 0 && (
                   <div className=' flex-center'>
-                    <Button className='w-full'>Add to cart</Button>
+                    <AddToCart
+                      cart={cart}
+                      item={{
+                        productId: product.id,
+                        name: product.name,
+                        slug: product.slug,
+                        price: round2(product.price),
+                        qty: 1,
+                        image: product.images![0],
+                      }}
+                    />
                   </div>
                 )}
               </CardContent>
