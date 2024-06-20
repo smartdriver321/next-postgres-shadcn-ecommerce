@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation'
 
 import OrderDetailsForm from './order-details-form'
-import { getOrderById } from '@/lib/actions/order.actions'
 import { auth } from '@/auth'
+import { getOrderById } from '@/lib/actions/order.actions'
+import { APP_NAME } from '@/lib/constants'
 
 export const metadata = {
-  title: 'Order Details',
+  title: ` - ${APP_NAME}`,
 }
 
 const OrderDetailsPage = async ({
@@ -19,7 +20,12 @@ const OrderDetailsPage = async ({
   if (!order) notFound()
 
   const session = await auth()
-  return <OrderDetailsForm order={order} />
+  return (
+    <OrderDetailsForm
+      order={order}
+      paypalClientId={process.env.PAYPAL_CLIENT_ID || 'sb'}
+    />
+  )
 }
 
 export default OrderDetailsPage
