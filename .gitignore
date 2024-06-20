@@ -37,4 +37,4 @@ next-env.d.ts
 
 # Additional
 .env
-sample.tsx
+tmp.tsx
