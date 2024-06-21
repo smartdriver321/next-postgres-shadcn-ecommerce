@@ -1,3 +1,4 @@
+import qs from 'query-string'
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
@@ -40,7 +41,7 @@ const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 2,
 })
 
-export function formatCurrency(amount: number | string | null) {
+export const formatCurrency = (amount: number | string | null) => {
   if (typeof amount === 'number') {
     return CURRENCY_FORMATTER.format(amount)
   } else if (typeof amount === 'string') {
@@ -50,7 +51,7 @@ export function formatCurrency(amount: number | string | null) {
   }
 }
 
-export function formatId(id: string) {
+export const formatId = (id: string) => {
   return `..${id.substring(id.length - 6)}`
 }
 
@@ -91,4 +92,26 @@ export const formatDateTime = (dateString: Date) => {
     dateOnly: formattedDate,
     timeOnly: formattedTime,
   }
+}
+
+export const formUrlQuery = ({
+  params,
+  key,
+  value,
+}: {
+  params: string
+  key: string
+  value: string | null
+}) => {
+  const currentUrl = qs.parse(params)
+
+  currentUrl[key] = value
+
+  return qs.stringifyUrl(
+    {
+      url: window.location.pathname,
+      query: currentUrl,
+    },
+    { skipNull: true }
+  )
 }

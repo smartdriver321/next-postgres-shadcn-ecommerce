@@ -1,7 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { eq, sql } from 'drizzle-orm'
+import { count, desc, eq, sql } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { isRedirectError } from 'next/dist/client/components/redirect'
 
@@ -14,6 +14,45 @@ import { getUserById } from './user.actions'
 import { formatError } from '../utils'
 import { insertOrderSchema } from '../validator'
 import { paypal } from '../paypal'
+import { PAGE_SIZE } from '../constants'
+
+// Get
+export const getOrderById = async (orderId: string) => {
+  return await db.query.orders.findFirst({
+    where: eq(orders.id, orderId),
+    with: {
+      orderItems: true,
+      user: { columns: { name: true, email: true } },
+    },
+  })
+}
+
+export async function getMyOrders({
+  limit = PAGE_SIZE,
+  page,
+}: {
+  limit?: number
+  page: number
+}) {
+  const session = await auth()
+  if (!session) throw new Error('User is not authenticated')
+
+  const data = await db.query.orders.findMany({
+    where: eq(orders.userId, session.user.id!),
+    orderBy: [desc(products.createdAt)],
+    limit,
+    offset: (page - 1) * limit,
+  })
+  const dataCount = await db
+    .select({ count: count() })
+    .from(orders)
+    .where(eq(orders.userId, session.user.id!))
+
+  return {
+    data,
+    totalPages: Math.ceil(dataCount[0].count / limit),
+  }
+}
 
 export const createOrder = async () => {
   try {
@@ -66,16 +105,6 @@ export const createOrder = async () => {
     }
     return { success: false, message: formatError(error) }
   }
-}
-
-export const getOrderById = async (orderId: string) => {
-  return await db.query.orders.findFirst({
-    where: eq(orders.id, orderId),
-    with: {
-      orderItems: true,
-      user: { columns: { name: true, email: true } },
-    },
-  })
 }
 
 export const createPayPalOrder = async (orderId: string) => {
