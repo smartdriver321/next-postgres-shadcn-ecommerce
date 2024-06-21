@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: `${APP_NAME} - ${APP_DESCRIPTION}`,
 }
 
-export default async function Home() {
+const Home = async () => {
   const latestProducts = await getLatestProducts()
 
   return (
@@ -17,3 +17,5 @@ export default async function Home() {
     </div>
   )
 }
+
+export default Home

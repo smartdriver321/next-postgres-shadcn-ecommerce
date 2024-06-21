@@ -14,8 +14,9 @@ import { users } from '@/db/schema'
 import { formatError } from '../utils'
 import { ShippingAddress } from '@/types'
 import { revalidatePath } from 'next/cache'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
+import { throws } from 'assert'
 
 export async function signInWithCredentials(
   prevState: unknown,
@@ -121,6 +122,29 @@ export async function updateUserPaymentMethod(
       .set({ paymentMethod: paymentMethod.type })
       .where(eq(users.id, currentUser.id))
     // revalidatePath('/place-order')
+    return {
+      success: true,
+      message: 'User updated successfully',
+    }
+  } catch (error) {
+    return { success: false, message: formatError(error) }
+  }
+}
+
+export const updateProfile = async (user: { name: string; email: string }) => {
+  try {
+    const session = await auth()
+    const currentUser = await db.query.users.findFirst({
+      where: (users, { eq }) => eq(users.id, session?.user.id!),
+    })
+    if (!currentUser) throw new Error('User not found')
+
+    await db
+      .update(users)
+      .set({
+        name: user.name,
+      })
+      .where(eq(users.id, currentUser.id))
     return {
       success: true,
       message: 'User updated successfully',
